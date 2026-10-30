@@ -1,0 +1,97 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid #f3e8ee;
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: #111827;
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand small {
+  color: #be185d;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9px;
+  background: #be185d;
+  color: #ffffff;
+  font-size: 0.8rem;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+nav a {
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+nav a:hover {
+  color: #be185d;
+}
+
+.nav-cta {
+  border-radius: 9px;
+  padding: 0.5rem 0.8rem;
+  background: #fdf2f8;
+  color: #be185d !important;
+}
+
+.nav-button {
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  color: #be185d;
+}
+
+main {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f3e8ee;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}

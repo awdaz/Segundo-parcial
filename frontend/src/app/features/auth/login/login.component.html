@@ -1,0 +1,43 @@
+<section class="auth-card">
+  <header>
+    <p class="eyebrow">FashionStore SaaS</p>
+    <h1>Iniciar sesion</h1>
+    <p class="muted">Acceda con su empresa, correo y contrasena.</p>
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Empresa
+      <input formControlName="empresa_slug" autocomplete="organization" placeholder="demo" />
+      <small>Deje vacio solo para ingresar como superadmin.</small>
+    </label>
+
+    <label>
+      Correo
+      <input formControlName="correo" type="email" autocomplete="email" placeholder="admin@demo.test" />
+      @if (form.controls.correo.touched && form.controls.correo.invalid) {
+        <small>Ingrese un correo valido.</small>
+      }
+    </label>
+
+    <label>
+      Contrasena
+      <input formControlName="password" type="password" autocomplete="current-password" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small>Minimo 8 caracteres.</small>
+      }
+    </label>
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+  </form>
+
+  <p class="footer-link">
+    No tiene cuenta? <a routerLink="/register">Registrarse</a>
+  </p>
+</section>
