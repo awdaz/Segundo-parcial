@@ -11,24 +11,28 @@ import {
   User,
   VerifyEmailResponse,
 } from './models';
+import { NetworkService } from './network.service';
 import { OfflineQueueService } from './offline-queue.service';
+import { SessionStoreService } from './session-store.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly offline = inject(OfflineQueueService);
+  private readonly store = inject(SessionStoreService);
+  private readonly network = inject(NetworkService);
   private readonly apiUrl = environment.apiUrl;
 
-  private readonly accessKey = 'fs_access_token';
-  private readonly refreshKey = 'fs_refresh_token';
-  private readonly userKey = 'fs_user';
-  private readonly tenantKey = 'fs_tenant';
-
-  readonly user = signal<User | null>(this.readUser());
-  readonly accessToken = signal<string | null>(localStorage.getItem(this.accessKey));
+  readonly user = signal<User | null>(this.store.readUser());
+  readonly accessToken = signal<string | null>(this.store.readAccessToken());
+  readonly refreshToken = signal<string | null>(this.store.readRefreshToken());
+  readonly expiresAt = signal<number | null>(this.store.readExpiresAt());
   readonly isAuthenticated = computed(() => !!this.accessToken() && !!this.user());
   readonly pendingOffline = signal(this.offline.hasPending());
+  readonly canWrite = computed(
+    () => this.network.online() && this.isAuthenticated() && !this.isSessionExpired(),
+  );
 
   login(payload: {
     empresa_slug: string | null;
@@ -39,8 +43,9 @@ export class AuthService {
       tap((response) => {
         this.storeSession(response);
         if (payload.empresa_slug) {
-          localStorage.setItem(this.tenantKey, payload.empresa_slug);
+          this.store.saveTenant(payload.empresa_slug);
         }
+        this.network.markOnline();
       }),
     );
   }
@@ -53,7 +58,10 @@ export class AuthService {
     password: string;
   }): Observable<RegisterResponse> {
     return this.http.post<RegisterResponse>(`${this.apiUrl}/auth/register`, payload).pipe(
-      tap(() => localStorage.setItem(this.tenantKey, payload.empresa_slug)),
+      tap(() => {
+        this.store.saveTenant(payload.empresa_slug);
+        this.network.markOnline();
+      }),
     );
   }
 
@@ -61,21 +69,30 @@ export class AuthService {
     empresa_slug: string;
     token: string;
   }): Observable<VerifyEmailResponse> {
-    return this.http.post<VerifyEmailResponse>(`${this.apiUrl}/auth/verify-email`, payload);
+    return this.http.post<VerifyEmailResponse>(`${this.apiUrl}/auth/verify-email`, payload).pipe(
+      tap(() => this.network.markOnline()),
+    );
   }
 
   refresh(): Observable<RefreshResponse> {
-    const refreshToken = localStorage.getItem(this.refreshKey);
+    const refreshToken = this.refreshToken();
     if (!refreshToken) {
       return throwError(() => new Error('No hay token de refresco'));
     }
+
     return this.http
       .post<RefreshResponse>(`${this.apiUrl}/auth/refresh`, { refresh_token: refreshToken })
       .pipe(
         tap((response) => {
-          localStorage.setItem(this.accessKey, response.access_token);
-          localStorage.setItem(this.refreshKey, response.refresh_token);
+          this.store.saveTokens(
+            response.access_token,
+            response.refresh_token,
+            response.expires_in,
+          );
           this.accessToken.set(response.access_token);
+          this.refreshToken.set(response.refresh_token);
+          this.expiresAt.set(Date.now() + response.expires_in * 1000);
+          this.network.markOnline();
         }),
       );
   }
@@ -98,8 +115,9 @@ export class AuthService {
   me(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/me`).pipe(
       tap((user) => {
-        localStorage.setItem(this.userKey, JSON.stringify(user));
+        this.store.saveUser(user);
         this.user.set(user);
+        this.network.markOnline();
       }),
     );
   }
@@ -107,8 +125,9 @@ export class AuthService {
   updateMe(payload: { nombre?: string | null; telefono?: string | null }): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/users/me`, payload).pipe(
       tap((user) => {
-        localStorage.setItem(this.userKey, JSON.stringify(user));
+        this.store.saveUser(user);
         this.user.set(user);
+        this.network.markOnline();
       }),
     );
   }
@@ -117,41 +136,35 @@ export class AuthService {
     password_actual: string;
     password_nueva: string;
   }): Observable<{ mensaje: string }> {
-    return this.http.post<{ mensaje: string }>(`${this.apiUrl}/users/me/password`, payload);
+    return this.http
+      .post<{ mensaje: string }>(`${this.apiUrl}/users/me/password`, payload)
+      .pipe(tap(() => this.network.markOnline()));
   }
 
   tenantSlug(): string {
-    return localStorage.getItem(this.tenantKey) ?? 'demo';
+    return this.store.readTenant();
+  }
+
+  isSessionExpired(): boolean {
+    const expiresAt = this.expiresAt();
+    return expiresAt !== null && Date.now() >= expiresAt;
   }
 
   clearSession(): void {
-    localStorage.removeItem(this.accessKey);
-    localStorage.removeItem(this.refreshKey);
-    localStorage.removeItem(this.userKey);
+    this.store.clearAuth();
     this.accessToken.set(null);
+    this.refreshToken.set(null);
+    this.expiresAt.set(null);
     this.user.set(null);
     this.pendingOffline.set(this.offline.hasPending());
   }
 
   private storeSession(response: LoginResponse): void {
-    localStorage.setItem(this.accessKey, response.access_token);
-    localStorage.setItem(this.refreshKey, response.refresh_token);
-    localStorage.setItem(this.userKey, JSON.stringify(response.usuario));
+    this.store.saveSession(response);
     this.accessToken.set(response.access_token);
+    this.refreshToken.set(response.refresh_token);
+    this.expiresAt.set(Date.now() + response.expires_in * 1000);
     this.user.set(response.usuario);
     this.pendingOffline.set(this.offline.hasPending());
   }
-
-  private readUser(): User | null {
-    const raw = localStorage.getItem(this.userKey);
-    if (!raw) {
-      return null;
-    }
-    try {
-      return JSON.parse(raw) as User;
-    } catch {
-      return null;
-    }
-  }
 }
-

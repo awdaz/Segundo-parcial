@@ -1,15 +1,14 @@
 :host {
   display: flex;
   justify-content: center;
-  padding: 2rem 1rem;
 }
 
 .auth-card {
   width: min(100%, 460px);
   background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  padding: 2rem;
+  border-radius: 20px;
+  padding: 1.35rem;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
 }
 
@@ -24,18 +23,20 @@
 
 h1 {
   margin: 0;
-  font-size: 1.9rem;
+  font-size: 1.7rem;
   color: #111827;
+  letter-spacing: -0.02em;
 }
 
 .muted {
-  margin: 0.5rem 0 1.5rem;
+  margin: 0.45rem 0 1.2rem;
   color: #6b7280;
+  line-height: 1.45;
 }
 
 form {
   display: grid;
-  gap: 1rem;
+  gap: 0.95rem;
 }
 
 label {
@@ -47,12 +48,16 @@ label {
 }
 
 input {
+  width: 100%;
+  min-height: 46px;
   border: 1px solid #d1d5db;
-  border-radius: 10px;
-  padding: 0.75rem 0.85rem;
+  border-radius: 11px;
+  padding: 0.7rem 0.85rem;
   font: inherit;
+  font-size: 16px;
   color: #111827;
   outline: none;
+  background: #ffffff;
 }
 
 input:focus {
@@ -66,9 +71,10 @@ small {
 }
 
 button {
+  min-height: 48px;
   border: 0;
-  border-radius: 10px;
-  padding: 0.85rem 1rem;
+  border-radius: 11px;
+  padding: 0.8rem 1rem;
   background: #be185d;
   color: #ffffff;
   font: inherit;
@@ -81,32 +87,45 @@ button:disabled {
   cursor: wait;
 }
 
-.alert {
+.alert,
+.warning,
+.success {
   margin: 0 0 1rem;
-  border-radius: 10px;
-  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  line-height: 1.45;
+}
+
+.alert {
   background: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
 }
 
+.warning {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
 .success {
-  display: grid;
-  gap: 0.8rem;
-  border-radius: 12px;
-  padding: 1rem;
   background: #f0fdf4;
-  border: 1px solid #bbf7d0;
   color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.success p {
+  margin: 0 0 0.8rem;
 }
 
 .success a {
-  color: #047857;
+  color: #166534;
   font-weight: 700;
 }
 
 .footer-link {
-  margin: 1.4rem 0 0;
+  margin: 1.3rem 0 0;
+  color: #6b7280;
   text-align: center;
 }
 

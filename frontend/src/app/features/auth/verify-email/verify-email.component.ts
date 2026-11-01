@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth.service';
+import { apiErrorMessage } from '../../../core/error-mapper';
+import { NetworkService } from '../../../core/network.service';
 
 @Component({
   selector: 'app-verify-email',
@@ -14,6 +16,7 @@ export class VerifyEmailComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  readonly network = inject(NetworkService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
@@ -38,15 +41,18 @@ export class VerifyEmailComponent implements OnInit {
       return;
     }
 
+    if (!this.network.online()) {
+      this.error.set('Sin conexion. La verificacion necesita red.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
     this.success.set(null);
     this.auth.verifyEmail(this.form.getRawValue()).subscribe({
       next: (response) => this.success.set(response.mensaje),
       error: (error) => {
-        this.error.set(
-          error?.error?.detail?.message ?? 'No se pudo verificar el correo.',
-        );
+        this.error.set(apiErrorMessage(error, 'No se pudo verificar el correo.'));
         this.loading.set(false);
       },
       complete: () => this.loading.set(false),

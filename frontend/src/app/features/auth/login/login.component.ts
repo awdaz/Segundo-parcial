@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth.service';
+import { apiErrorMessage } from '../../../core/error-mapper';
+import { NetworkService } from '../../../core/network.service';
 
 @Component({
   selector: 'app-login',
@@ -14,9 +16,11 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly network = inject(NetworkService);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly showPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     empresa_slug: [this.auth.tenantSlug()],
@@ -30,6 +34,11 @@ export class LoginComponent {
       return;
     }
 
+    if (!this.network.online()) {
+      this.error.set('Sin conexion. Inicie sesion cuando recupere la red.');
+      return;
+    }
+
     const raw = this.form.getRawValue();
     this.loading.set(true);
     this.error.set(null);
@@ -39,11 +48,14 @@ export class LoginComponent {
         empresa_slug: raw.empresa_slug.trim() || null,
       })
       .subscribe({
-        next: () => void this.router.navigate(['/profile']),
+        next: () => {
+          const user = this.auth.user();
+          const target =
+            user?.rol === 'superadmin' && !user.empresa_id ? '/saas' : '/profile';
+          void this.router.navigateByUrl(target);
+        },
         error: (error) => {
-          this.error.set(
-            error?.error?.detail?.message ?? 'No se pudo iniciar sesion. Verifique sus datos.',
-          );
+          this.error.set(apiErrorMessage(error, 'No se pudo iniciar sesion. Verifique sus datos.'));
           this.loading.set(false);
         },
         complete: () => this.loading.set(false),

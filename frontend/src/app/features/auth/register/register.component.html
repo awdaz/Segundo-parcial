@@ -5,6 +5,10 @@
     <p class="muted">El registro queda asociado a la empresa indicada.</p>
   </header>
 
+  @if (!network.online()) {
+    <p class="warning" role="status">Sin conexion. El registro necesita red.</p>
+  }
+
   @if (error()) {
     <p class="alert" role="alert">{{ error() }}</p>
   }
@@ -22,7 +26,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <label>
         Empresa
-        <input formControlName="empresa_slug" placeholder="demo" />
+        <input formControlName="empresa_slug" autocomplete="organization" placeholder="demo" />
         @if (form.controls.empresa_slug.touched && form.controls.empresa_slug.invalid) {
           <small>Indique el identificador de la empresa.</small>
         }
@@ -38,7 +42,7 @@
 
       <label>
         Correo
-        <input formControlName="correo" type="email" autocomplete="email" />
+        <input formControlName="correo" type="email" autocomplete="email" inputmode="email" />
         @if (form.controls.correo.touched && form.controls.correo.invalid) {
           <small>Ingrese un correo valido.</small>
         }
@@ -46,18 +50,27 @@
 
       <label>
         Telefono (opcional)
-        <input formControlName="telefono" autocomplete="tel" />
+        <input formControlName="telefono" autocomplete="tel" inputmode="tel" />
       </label>
 
       <label>
         Contrasena
-        <input formControlName="password" type="password" autocomplete="new-password" />
+        <span class="password-field">
+          <input
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <button type="button" class="reveal" (click)="showPassword.set(!showPassword())">
+            {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </span>
         @if (form.controls.password.touched && form.controls.password.invalid) {
           <small>Minimo 8 caracteres.</small>
         }
       </label>
 
-      <button type="submit" [disabled]="loading()">
+      <button type="submit" [disabled]="loading() || !network.online()">
         {{ loading() ? 'Registrando...' : 'Registrarme' }}
       </button>
     </form>

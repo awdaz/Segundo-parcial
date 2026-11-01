@@ -7,14 +7,14 @@ ON CONFLICT (slug) DO UPDATE SET nombre = EXCLUDED.nombre, estado = 'activa', up
 
 -- Plan profesional
 INSERT INTO plan (codigo, nombre, precio_mensual, moneda, activo)
-VALUES ('PROFESIONAL', 'Profesional', 49.99, 'BOB', true)
+VALUES ('profesional', 'Profesional', 499.00, 'BOB', true)
 ON CONFLICT (codigo) DO UPDATE SET activo = true;
 
 -- Suscripcion activa
 INSERT INTO suscripcion (empresa_id, plan_id, estado, fecha_inicio, fecha_fin)
 SELECT e.id, p.id, 'activa', CURRENT_DATE, CURRENT_DATE + INTERVAL '365 days'
 FROM empresa e, plan p
-WHERE e.slug = 'demo' AND p.codigo = 'PROFESIONAL'
+WHERE e.slug = 'demo' AND p.codigo = 'profesional'
 ON CONFLICT DO NOTHING;
 
 -- Sucursal

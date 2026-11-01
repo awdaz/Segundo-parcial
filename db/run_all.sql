@@ -18,4 +18,5 @@
 \ir 15_indices.sql
 \ir 16_seeds.sql
 \ir 18_ajustes_cu01_05.sql
+\ir 20_ajustes_cu06_cu09.sql
 \ir 99_verificacion.sql

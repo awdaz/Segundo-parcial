@@ -5,8 +5,9 @@ CREATE TABLE empresa (
     nit varchar(20) NOT NULL UNIQUE,
     correo citext NOT NULL,
     telefono varchar(20),
+    direccion varchar(200),
     estado varchar(20) NOT NULL DEFAULT 'activa'
-        CHECK (estado IN ('activa', 'suspendida', 'cancelada')),
+        CHECK (estado IN ('pendiente_plan', 'activa', 'suspendida', 'cancelada')),
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     deleted_at timestamptz

@@ -8,3 +8,4 @@
 \ir 05_rls_auditoria.sql
 \ir 06_limites_planes.sql
 \ir 07_cobertura_36.sql
+\ir 08_cu06_cu09.sql

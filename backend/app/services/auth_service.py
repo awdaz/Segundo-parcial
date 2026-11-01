@@ -67,7 +67,14 @@ def _validate_access(row: Any) -> None:
     if empresa_id is None:
         return
 
-    if _value(row, "empresa_estado") != "activa":
+    empresa_estado = _value(row, "empresa_estado")
+    if empresa_estado == "pendiente_plan":
+        raise api_error(
+            403,
+            "EMPRESA_PENDIENTE_PLAN",
+            "La empresa aun no tiene un plan asignado",
+        )
+    if empresa_estado != "activa":
         raise api_error(403, "EMPRESA_NO_ACTIVA", "La empresa no se encuentra activa")
 
     suscripcion_estado = _value(row, "suscripcion_estado")

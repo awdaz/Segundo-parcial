@@ -12,5 +12,11 @@ export const authGuard: CanActivateFn = () => {
 export const guestGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  return auth.isAuthenticated() ? router.createUrlTree(['/profile']) : true;
+  const user = auth.user();
+  if (!auth.isAuthenticated()) {
+    return true;
+  }
+  return user?.rol === 'superadmin' && !user.empresa_id
+    ? router.createUrlTree(['/saas'])
+    : router.createUrlTree(['/profile']);
 };

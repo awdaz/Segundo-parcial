@@ -13,5 +13,7 @@ frontend/.angular/
 
 # Logs / temporales
 *.log
+*.tmp
+~$*
 .DS_Store
 Thumbs.db

@@ -5,6 +5,10 @@
     <p class="muted">Confirme el token enviado a su correo para activar el acceso.</p>
   </header>
 
+  @if (!network.online()) {
+    <p class="warning" role="status">Sin conexion. La verificacion necesita red.</p>
+  }
+
   @if (error()) {
     <p class="alert" role="alert">{{ error() }}</p>
   }
@@ -18,7 +22,7 @@
     <form [formGroup]="form" (ngSubmit)="submit()">
       <label>
         Empresa
-        <input formControlName="empresa_slug" placeholder="demo" />
+        <input formControlName="empresa_slug" autocomplete="organization" placeholder="demo" />
       </label>
 
       <label>
@@ -29,7 +33,7 @@
         }
       </label>
 
-      <button type="submit" [disabled]="loading()">
+      <button type="submit" [disabled]="loading() || !network.online()">
         {{ loading() ? 'Verificando...' : 'Verificar' }}
       </button>
     </form>
